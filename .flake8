@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203, W503, E501, F401, F841, E402, F811, F541, W291
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    chroma_db,
+    .mypy_cache
