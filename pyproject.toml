@@ -12,12 +12,10 @@ dependencies = [
     "uvicorn==0.35.0",
     "python-multipart==0.0.20",
     "python-dotenv==1.1.1",
-<<<<<<< HEAD
     "black>=25.1.0",
     "isort>=6.0.1",
     "flake8>=7.3.0",
     "mypy>=1.17.1",
-=======
     "pytest>=7.0.0",
     "httpx>=0.24.0",
 ]
@@ -37,7 +35,6 @@ markers = [
     "unit: Unit tests that mock dependencies",
     "integration: Integration tests with real components", 
     "api: API endpoint tests",
->>>>>>> testing_feature
 ]
 
 [tool.black]

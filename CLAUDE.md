@@ -33,30 +33,6 @@ echo "ANTHROPIC_API_KEY=your_key_here" > .env
 
 **Important**: Always use `uv` for dependency management. Do not use `pip` directly in this project.
 
-### Code Quality Tools
-```bash
-# Format code (black + isort)
-./scripts/format.sh
-
-# Run all linting checks (flake8, mypy, black --check, isort --check)
-./scripts/lint.sh
-
-# Complete quality workflow (format then lint)
-./scripts/quality.sh
-
-# Individual tools
-uv run black backend/ main.py        # Format with black
-uv run isort backend/ main.py         # Sort imports
-uv run flake8 backend/ main.py        # Lint with flake8
-uv run mypy backend/ main.py          # Type checking
-```
-
-**Code Standards**:
-- Line length: 88 characters (black standard)
-- Import sorting: isort with black profile
-- Type hints encouraged but not required
-- All Python code is automatically formatted with black and isort
-
 ### Development Server
 - Web Interface: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
