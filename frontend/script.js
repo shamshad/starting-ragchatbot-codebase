@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, newChatButton;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
+    newChatButton = document.getElementById('newChatButton');
     
     setupEventListeners();
     createNewSession();
@@ -29,6 +30,8 @@ function setupEventListeners() {
         if (e.key === 'Enter') sendMessage();
     });
     
+    // New chat button
+    newChatButton.addEventListener('click', startNewChat);
     
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
@@ -122,15 +125,75 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     let html = `<div class="message-content">${displayContent}</div>`;
     
     if (sources && sources.length > 0) {
-        html += `
-            <details class="sources-collapsible">
-                <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
-            </details>
-        `;
+        console.log('Sources received:', sources); // Debug log
+        
+        // Create sources container
+        const sourcesContainer = document.createElement('details');
+        sourcesContainer.className = 'sources-collapsible';
+        
+        const summary = document.createElement('summary');
+        summary.className = 'sources-header';
+        summary.textContent = 'Sources';
+        sourcesContainer.appendChild(summary);
+        
+        const sourcesContent = document.createElement('div');
+        sourcesContent.className = 'sources-content';
+        
+        // Create source elements
+        sources.forEach((source, index) => {
+            console.log(`Source ${index}:`, source, 'Type:', typeof source); // Debug
+            
+            if (index > 0) {
+                sourcesContent.appendChild(document.createTextNode(', '));
+            }
+            
+            // Handle string format with embedded link (text|link)
+            if (typeof source === 'string') {
+                const parts = source.split('|');
+                console.log(`Split parts:`, parts); // Debug
+                if (parts.length === 2) {
+                    // Has embedded link - create actual link element
+                    const sourceText = parts[0];
+                    const sourceLink = parts[1];
+                    
+                    console.log(`Creating link: "${sourceText}" -> "${sourceLink}"`); // Debug
+                    
+                    const linkElement = document.createElement('a');
+                    linkElement.href = sourceLink;
+                    linkElement.target = '_blank';
+                    linkElement.rel = 'noopener noreferrer';
+                    linkElement.className = 'source-link';
+                    linkElement.textContent = sourceText;
+                    linkElement.style.color = '#2563eb'; // Force blue color for testing
+                    linkElement.style.textDecoration = 'underline'; // Force underline for testing
+                    
+                    console.log(`Created link element:`, linkElement); // Debug
+                    console.log(`Link href:`, linkElement.href); // Debug
+                    
+                    sourcesContent.appendChild(linkElement);
+                    console.log(`Appended link to sourcesContent`); // Debug
+                } else {
+                    // Plain text source
+                    console.log(`Adding plain text source:`, source);
+                    sourcesContent.appendChild(document.createTextNode(source));
+                }
+            } else {
+                // Fallback for any other type
+                console.warn('Unexpected source type:', typeof source, source);
+                sourcesContent.appendChild(document.createTextNode(String(source)));
+            }
+        });
+        
+        sourcesContainer.appendChild(sourcesContent);
+        
+        // Don't convert to HTML - append directly
+        messageDiv.innerHTML = html;
+        messageDiv.appendChild(sourcesContainer);
+        
+        console.log('Appended sources container directly to messageDiv'); // Debug
+    } else {
+        messageDiv.innerHTML = html;
     }
-    
-    messageDiv.innerHTML = html;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     
@@ -150,6 +213,28 @@ async function createNewSession() {
     currentSessionId = null;
     chatMessages.innerHTML = '';
     addMessage('Welcome to the Course Materials Assistant! I can help you with questions about courses, lessons and specific content. What would you like to know?', 'assistant', null, true);
+}
+
+function startNewChat() {
+    // Provide visual feedback
+    newChatButton.disabled = true;
+    const originalText = newChatButton.textContent;
+    newChatButton.textContent = 'STARTING...';
+    
+    // Clear current chat and start new session
+    createNewSession();
+    
+    // Clear any text in the input
+    if (chatInput) {
+        chatInput.value = '';
+        chatInput.focus();
+    }
+    
+    // Reset button state
+    setTimeout(() => {
+        newChatButton.disabled = false;
+        newChatButton.textContent = originalText;
+    }, 300);
 }
 
 // Load course statistics

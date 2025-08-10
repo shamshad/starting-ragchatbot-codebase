@@ -245,6 +245,19 @@ header h1 {
     color: var(--text-secondary);
 }
 
+/* Source link styling */
+.source-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.source-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
 /* Markdown formatting styles */
 .message-content h1,
 .message-content h2,
@@ -460,6 +473,36 @@ header h1 {
     transition: color 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* New Chat Button */
+.new-chat-button {
+    width: 100%;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem 0;
+    background: none;
+    border: none;
+    transition: color 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.new-chat-button:focus {
+    outline: none;
+    color: var(--primary-color);
+}
+
+.new-chat-button:hover:not(:disabled) {
+    color: var(--primary-color);
+}
+
+.new-chat-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .stats-header:focus,

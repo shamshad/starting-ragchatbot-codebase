@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import os
 
 from config import config
@@ -88,14 +88,66 @@ async def get_course_stats():
 @app.on_event("startup")
 async def startup_event():
     """Load initial documents on startup"""
-    docs_path = "../docs"
-    if os.path.exists(docs_path):
-        print("Loading initial documents...")
+    print("Starting document loading process...")
+    print(f"Current working directory: {os.getcwd()}")
+    
+    # Try multiple possible paths for docs folder
+    possible_docs_paths = [
+        "../docs",        # Standard path when running from backend/
+        "docs",           # If running from project root
+        "../../docs",     # If running from nested directory
+        "./docs"          # Alternative current directory
+    ]
+    
+    docs_loaded = False
+    
+    for docs_path in possible_docs_paths:
+        print(f"Checking for docs folder at: {docs_path}")
+        if os.path.exists(docs_path):
+            print(f"✓ Found docs folder at {docs_path}")
+            try:
+                # List files in docs folder for debugging
+                files = os.listdir(docs_path)
+                course_files = [f for f in files if f.lower().endswith(('.txt', '.pdf', '.docx'))]
+                print(f"Found {len(course_files)} course files: {course_files}")
+                
+                if course_files:
+                    print("Loading course documents...")
+                    courses, chunks = rag_system.add_course_folder(docs_path, clear_existing=False)
+                    print(f"✓ Successfully loaded {courses} courses with {chunks} chunks")
+                    docs_loaded = True
+                    break
+                else:
+                    print(f"⚠ No course files found in {docs_path}")
+            except Exception as e:
+                print(f"✗ Error loading documents from {docs_path}: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print(f"✗ Docs folder not found at {docs_path}")
+    
+    if not docs_loaded:
+        print("⚠ WARNING: No course documents were loaded!")
+        print("The RAG system will not be able to answer content-specific questions.")
+        print("Available files in current directory:", os.listdir('.'))
+        
+        # Check if vector store has existing content
         try:
-            courses, chunks = rag_system.add_course_folder(docs_path, clear_existing=False)
-            print(f"Loaded {courses} courses with {chunks} chunks")
+            analytics = rag_system.get_course_analytics()
+            if analytics['total_courses'] > 0:
+                print(f"✓ Found {analytics['total_courses']} existing courses in vector store")
+                docs_loaded = True
+            else:
+                print("✗ No existing courses found in vector store")
         except Exception as e:
-            print(f"Error loading documents: {e}")
+            print(f"Error checking existing courses: {e}")
+    
+    # Final status
+    if docs_loaded:
+        analytics = rag_system.get_course_analytics()
+        print(f"🎉 Startup complete! System ready with {analytics['total_courses']} courses")
+    else:
+        print("⚠ System started but no course content available")
 
 # Custom static file handler with no-cache headers for development
 from fastapi.staticfiles import StaticFiles
